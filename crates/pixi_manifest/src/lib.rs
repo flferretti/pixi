@@ -29,7 +29,7 @@ pub use build_system::BuildSystem;
 pub use channel::PrioritizedChannel;
 pub use dependencies::{CondaDependencies, Dependencies, PyPiDependencies};
 pub use environment::{Environment, EnvironmentName};
-pub use error::TomlError;
+pub use error::{TomlError, PixiVersionError};
 pub use feature::{Feature, FeatureName};
 pub use features_ext::FeaturesExt;
 pub use has_features_iter::HasFeaturesIter;
