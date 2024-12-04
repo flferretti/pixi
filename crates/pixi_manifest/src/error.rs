@@ -59,6 +59,8 @@ pub enum TomlError {
     Conversion(#[from] Box<Pep508ToPyPiRequirementError>),
     #[error(transparent)]
     InvalidNonPackageDependencies(#[from] InvalidNonPackageDependencies),
+    #[error("Pixi version error: {0}")]
+    PixiVersionError(String),
 }
 
 impl From<toml_edit::TomlError> for TomlError {
