@@ -3,6 +3,8 @@ use std::fmt::{self, Display, Formatter};
 use rattler_conda_types::Platform;
 
 use crate::FeatureName;
+use crate::TomlError;
+use semver::VersionReq;
 
 /// Struct that is used to access a table in `pixi.toml` or `pyproject.toml`.
 pub struct TableName<'a> {
@@ -10,6 +12,7 @@ pub struct TableName<'a> {
     platform: Option<&'a Platform>,
     feature_name: Option<&'a FeatureName>,
     table: Option<&'a str>,
+    pixi_version: Option<&'a str>, // P3610
 }
 
 impl Display for TableName<'_> {
@@ -26,6 +29,7 @@ impl<'a> TableName<'a> {
             platform: None,
             feature_name: None,
             table: None,
+            pixi_version: None, // P3610
         }
     }
 
@@ -50,6 +54,12 @@ impl<'a> TableName<'a> {
     /// Set the optional and custom table name.
     pub fn with_table(mut self, table: Option<&'static str>) -> Self {
         self.table = table;
+        self
+    }
+
+    /// Set the pixi version of the table.
+    pub fn with_pixi_version(mut self, pixi_version: Option<&'a str>) -> Self {
+        self.pixi_version = pixi_version;
         self
     }
 }
@@ -88,7 +98,34 @@ impl TableName<'_> {
         if let Some(table) = self.table {
             parts.push(table);
         }
+        if let Some(pixi_version) = self.pixi_version { // P3610
+            parts.push(pixi_version);
+        }
         parts.join(".")
+    }
+}
+
+impl TableName<'_> {
+    /// Parses the specified string as a toml representation of a build system.
+    pub fn from_toml_str(source: &str) -> Result<Self, TomlError> {
+        let toml_build_system = TomlBuildSystem::from_toml_str(source)?;
+        let build_system = toml_build_system.into_build_system()?;
+
+        // Validate Pixi version
+        if let Some(pixi_version) = build_system.pixi_version {
+            let current_version = env!("CARGO_PKG_VERSION");
+            let version_req = VersionReq::parse(&pixi_version).map_err(|e| {
+                TomlError::PixiVersionError(format!("Invalid Pixi version requirement: {}", e))
+            })?;
+            if !version_req.matches(&semver::Version::parse(current_version).unwrap()) {
+                return Err(TomlError::PixiVersionError(format!(
+                    "Pixi version {} does not satisfy the requirement {}",
+                    current_version, pixi_version
+                )));
+            }
+        }
+
+        Ok(build_system)
     }
 }
 
