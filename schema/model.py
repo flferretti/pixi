@@ -160,6 +160,11 @@ class Workspace(StrictBaseModel):
     build_variants: dict[NonEmptyStr, list[str]] | None = Field(
         None, description="The build variants of the project"
     )
+    pixi_version: NonEmptyStr | None = Field(
+        None,
+        description="The required version of Pixi for this project",
+        examples=["1.2.3"],
+    )
 
 
 class Package(StrictBaseModel):
@@ -653,6 +658,11 @@ class BaseManifest(StrictBaseModel):
     )
     build_backend: dict[NonEmptyStr, Any] | None = Field(
         None, description="Configuration for the build backend."
+    )
+    pixi_version: NonEmptyStr | None = Field(
+        None,
+        description="The required version of Pixi for this project; we advise use of [SemVer](https://semver.org)",
+        examples=["1.2.3"],
     )
 
 
