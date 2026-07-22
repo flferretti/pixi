@@ -1,0 +1,16 @@
+--8<-- [start:example]
+
+## Examples
+
+```shell
+pixi auth token repo.prefix.dev
+pixi auth token anaconda.org
+```
+
+Handy for feeding a stored credential to other tools:
+
+```shell
+curl -H "Authorization: Bearer $(pixi auth token repo.prefix.dev)" https://repo.prefix.dev/...
+```
+
+--8<-- [end:example]

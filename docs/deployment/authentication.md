@@ -87,6 +87,16 @@ If you prefer to manage tokens yourself (e.g. in CI, where browser login isn't a
 pixi auth login prefix.dev --token pfx_jj8WDzvnuTHEGdAhwRZMC1Ag8gSto8
 ```
 
+### Retrieving the stored token
+
+Once logged in, `pixi auth token <HOST>` prints the stored token for a host, in the same fashion as `gh auth token` or `hf auth token`.
+This is useful for feeding a credential to other tools, e.g. a cloud VM startup script or a raw `curl` request:
+
+```shell
+pixi auth token repo.prefix.dev
+curl -H "Authorization: Bearer $(pixi auth token repo.prefix.dev)" https://repo.prefix.dev/...
+```
+
 Bearer tokens are sent with every request as an `Authorization: Bearer <TOKEN>` header.
 
 
@@ -155,8 +165,8 @@ This JSON file is located at `~/.rattler/credentials.json` and contains the cred
 
 ## Override the authentication storage
 
-You can use the `RATTLER_AUTH_FILE` environment variable to override the default location of the credentials file.
-When this environment variable is set, it provides the only source of authentication data that is used by pixi.
+You can use the `RATTLER_AUTH_FILE` environment variable (or the `--auth-file` flag) to override the default location of the credentials file used when Pixi authenticates package-fetching requests (installing, updating, uploading, publishing, etc.).
+When set, it provides the only source of authentication data for those requests — the keychain, default credentials file, and `.netrc` are not consulted.
 
 E.g.
 
@@ -168,6 +178,10 @@ pixi global install --auth-file $HOME/credentials.json ...
 
 !!!note
     `RATTLER_AUTH_FILE` has higher precedence than the CLI argument.
+
+!!!note
+    `pixi auth login` / `logout` / `status` / `token` always read and write the default credential storage (keychain, then `~/.rattler/credentials.json`, then `.netrc`) and do **not** consult `RATTLER_AUTH_FILE` or `--auth-file`.
+    If you're using an override file, edit its JSON directly instead of the `pixi auth` subcommands.
 
 The JSON should follow the following format:
 
